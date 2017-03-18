@@ -14,15 +14,15 @@ public abstract class BaseEnemy : MonoBehaviour {
     /// <summary>
     /// How fast the enemy may move.
     /// </summary>
-    protected float movementSpeed;
+    public float movementSpeed;
     /// <summary>
     /// The max health of the enemy.
     /// </summary>
-    protected float maxHealth;
+    public float maxHealth;
     /// <summary>
     /// How much damage the enemy does on contact.
     /// </summary>
-    protected float contactDamage;
+    public float contactDamage;
     /// <summary>
     /// Reference to the blood prefab (which is instantiated upon the death of the enemy).
     /// </summary>
@@ -42,7 +42,7 @@ public abstract class BaseEnemy : MonoBehaviour {
     /// <summary>
     /// The amount the carnage bar is filled for killing this enemy.
     /// </summary>
-    private int carnageFill;
+    public int carnageFill;
 
     /// <summary>
     /// Called within the Start() method of child classes.
@@ -81,14 +81,13 @@ public abstract class BaseEnemy : MonoBehaviour {
     void Die()
     {
         state = STATE.DECEASED;
-        player.IncrementCarnageBar(carnageFill);
+        player.IncrementCarnageBar(carnageFill, true);
         Instantiate(blood, this.transform.position, this.transform.rotation);
         GetComponent<Renderer>().enabled = false;
         // Disable the collider for the enemy.
         if (GetComponent<PolygonCollider2D>() != null) GetComponent<PolygonCollider2D>().enabled = false;
         if (GetComponent<CircleCollider2D>() != null) GetComponent<CircleCollider2D>().enabled = false;
         showHealth = false;
-        // Destroy(gameObject);
     }
 
     /// <summary>

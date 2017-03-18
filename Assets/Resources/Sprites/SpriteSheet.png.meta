@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 4ac747edca0b73f49a9979069f271adb
-timeCreated: 1489863888
+timeCreated: 1489870477
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -19,6 +19,7 @@ TextureImporter:
     21300024: SpriteSheet_12
     21300026: SpriteSheet_13
     21300028: SpriteSheet_14
+    21300030: SpriteSheet_15
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -282,6 +283,19 @@ TextureImporter:
         y: 208
         width: 273
         height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: SpriteSheet_15
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 210
+        width: 248
+        height: 107
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

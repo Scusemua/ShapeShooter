@@ -19,27 +19,42 @@ public class Player : MonoBehaviour {
     private Vector3 previousLocation;
     private Vector2 movementDirectionVertical;
     private Vector2 movementDirectionHorizontal;
-    
-    // The number of kills required for a full carnage bar.
+
+    /// <summary>
+    /// The number of kills required for a full carnage bar.
+    /// </summary>
     private int chargeNeededForCarnage = 20;
-    // The number of kills the player currently has.
-    private int currentBarCharge;
-    // The total number of kills the player got throughout the game.
+    /// <summary>
+    /// The number of kills the player currently has.
+    /// </summary>
+    private int currentBarCharge = 0;
+    /// <summary>
+    /// The total number of kills the player got throughout the game.
+    /// </summary>
     private int totalKills;
 
     // When the player gets hit, they are temporarily invulnerable to give them a chance to move away.
     private float invulnerableTime = 0.5f;
     private float invulnerableTimeLeft = 1.5f;
     private bool invulnerable = false;
-    // Maximum health and current health.
-    private float maxHealth;
+    /// <summary>
+    /// Player's maximum health.
+    /// </summary>
+    private float maxHealth = 50f;
+    /// <summary>
+    /// The player's current health value.
+    /// </summary>
     private float health;
-    // Normal Movements Variables
+    /// <summary>
+    /// Normal Movement Variable.
+    /// </summary>
     private float walkSpeed = 4.0f;
     // Fire-rate related.
     private float fireCooldown = 0.2f;
     private float fireCooldownLeft = 0.0f;
-    // Affects how long Carnage Mode lasts.
+    /// <summary>
+    /// Affects how long Carnage Mode lasts.
+    /// </summary>
     private float carnageModeDecrement = 0.002f;
 
     // References to the heatlh bar, carnage bar, and carnage bar indicator images.
@@ -49,20 +64,32 @@ public class Player : MonoBehaviour {
     // How fast the health and carnage bars should drain/fill (in terms of the animation).
     private const float HEALTH_BAR_ANIMATION_SPEED = 0.05f;
     private const float CARNAGE_BAR_ANIMATION_SPEED = 0.05f;
-    // Indicates whether or not Carnage Mode is ready.
+    /// <summary>
+    /// Indicates whether or not Carnage Mode is ready.
+    /// </summary>
     private bool carnageReady = false;
+    /// <summary>
+    /// Reference to the Kill Counter text on the Canvas.
+    /// </summary>
+    private Text killCounterText; 
 
     // References to the dead and alive sprite versions of the player.
     public Sprite aliveImage;
     public Sprite deadImage;
     public Sprite carnageImage;
 
-    // Used for fading out on death.
+    /// <summary>
+    /// Used for fading out on death.
+    /// </summary>
     private SceneTransition transition;
-    // Time until fade out when player dies.
+    /// <summary>
+    /// Time until fade out when player dies.
+    /// </summary>
     private float timeToFadeout = 5.0f;
 
-    // Reference to the Animator component. 
+    /// <summary>
+    /// Reference to the Animator component. 
+    /// </summary>
     private Animator animator;
 
     // References to the music.
@@ -71,7 +98,9 @@ public class Player : MonoBehaviour {
     private AudioSource musicPlayer;
     private AudioSource attackSoundPlayer;
 
-    // Reference to where in the normal song the audio player was prior to bodies playing.
+    /// <summary>
+    /// Reference to where in the normal song the audio player was prior to bodies playing.
+    /// </summary>
     private float previousAudioLocation;
 
     void Start()
@@ -81,6 +110,7 @@ public class Player : MonoBehaviour {
         carnageBar = canvas.transform.FindChild("CarnageBarFiller").gameObject.GetComponent<Image>();
         carnageReadyIndicator = canvas.transform.GetChild(4).gameObject.GetComponent<Image>();
         carnageReadyIndicator.enabled = false;
+        killCounterText = canvas.transform.FindChild("KillCounterText").gameObject.GetComponent<Text>();
         previousLocation = this.transform.position;
         health = maxHealth;
         state = STATE.NORMAL;
@@ -199,13 +229,16 @@ public class Player : MonoBehaviour {
     /// <summary>
     /// Increments the kill counter.
     /// </summary>
-    public void IncrementCarnageBar(int amount)
+    public void IncrementCarnageBar(int amount, bool incrementKillCounter)
     {
         if (state != STATE.CARNAGE)
         {
             currentBarCharge += amount;
         }
-        totalKills++;
+        if (incrementKillCounter)
+        {
+            killCounterText.text = "" + (++totalKills);
+        }
     }
 
     /// <summary>
