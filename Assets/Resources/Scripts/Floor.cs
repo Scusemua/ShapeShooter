@@ -47,10 +47,11 @@ public class Floor : MonoBehaviour {
         {
             print("GENERATING ENEMIES!");   
             timeLeftToRegenerate = timeToRegenerate;
-            foreach (Room r in rooms)
+            for (int i = 1; i < rooms.Count; i++)
             {
-                print("GENERATING ENEMIES!");
-                r.GenerateEnemies();
+                rooms[i].GenerateEnemies();
+                // Slowly increase the frequency in which we regenerate enemies.
+                if (timeToRegenerate > 10.0f) timeToRegenerate -= 1.0f;
             }
         }
     }
@@ -167,16 +168,17 @@ public class Floor : MonoBehaviour {
             }
         }
         // Move the rooms into their proper positions and place the doors.
-        foreach (Room r in rooms)
+        for (int i = 0; i < rooms.Count; i++)
         {
             // Create a reference to the game object to which the room is attached.
-            GameObject gameObject = r.gameObject;
+            GameObject gameObject = rooms[i].gameObject;
             // Adjust the room's position via the transform.position field.
-            gameObject.transform.position = new Vector3(r.x, r.y, 0);
+            gameObject.transform.position = new Vector3(rooms[i].x, rooms[i].y, 0);
             // Place the doors appropriately.
-            r.PlaceDoors();
-            r.doorsDebug = roomsMatrix[r.xMatrix, r.yMatrix];
-            r.GenerateEnemies();
+            rooms[i].PlaceDoors();
+            rooms[i].doorsDebug = roomsMatrix[rooms[i].xMatrix, rooms[i].yMatrix];
+            // We don't want enemies in the first room.
+            if (i != 0) rooms[i].GenerateEnemies();
         }
         // Instantiate the player. 
         Instantiate(player, this.transform.position, Quaternion.identity);

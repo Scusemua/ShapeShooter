@@ -18,7 +18,8 @@ public class BasicEnemy : BaseEnemy
 	// Update is called once per frame
 	void Update () {
         targetTransform = player.transform;
-        if (Vector3.Distance(targetTransform.position, this.transform.position) < 12)
+        // Check if the room is active and then if the player is near.
+        if (room.IsActive()) // && Vector3.Distance(targetTransform.position, this.transform.position) < 12)
         {
             transform.position = Vector2.MoveTowards(transform.position, targetTransform.position, movementSpeed * Time.deltaTime);
         }

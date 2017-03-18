@@ -43,6 +43,10 @@ public abstract class BaseEnemy : MonoBehaviour {
     /// The amount the carnage bar is filled for killing this enemy.
     /// </summary>
     public int carnageFill;
+    /// <summary>
+    /// The Room from which the enemy originated.
+    /// </summary>
+    protected Room room;
 
     /// <summary>
     /// Called within the Start() method of child classes.
@@ -58,7 +62,7 @@ public abstract class BaseEnemy : MonoBehaviour {
     {
         if (!showHealth) return;
         Vector2 targetPos = Camera.main.WorldToScreenPoint(transform.position);
-        GUI.Box(new Rect(targetPos.x, Screen.height - targetPos.y, 60, 20), health + "/" + maxHealth);
+        GUI.Box(new Rect(targetPos.x, Screen.height - targetPos.y - 10, 60, 20), health + "/" + maxHealth);
     }
 
     /// <summary>
@@ -104,6 +108,11 @@ public abstract class BaseEnemy : MonoBehaviour {
     /// Exposes the contactDamage data field.
     /// </summary>
     public float ContactDamage { get { return contactDamage; } }
+
+    /// <summary>
+    /// Exposes the room property, which is a reference to the room from which this enemy originated.
+    /// </summary>
+    public Room Room { get { return room; } set { room = value; } }
 
     #endregion 
 

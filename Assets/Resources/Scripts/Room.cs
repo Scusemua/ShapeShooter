@@ -40,6 +40,14 @@ public class Room : MonoBehaviour {
     // Used to prevent the checking of enemies until they've actually been generated.
     private bool enemiesGenerated = false;
 
+    /// <summary>
+    /// A room becomes active once the player enters it. If the player isn't in the room, 
+    /// then the room isn't active and enemies from that room won't chase the player.
+    /// </summary>
+    private bool roomIsActive = false;
+
+    private Player player;
+
     // Use this for initialization
     void Start()
     {
@@ -54,19 +62,32 @@ public class Room : MonoBehaviour {
     }
 
     void FixedUpdate()
-    {
-        // Decrement the cooldown to fire.
+    {   
+        if (player == null)
+        {
+            player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        }
+        Vector3 playerPosition = player.transform.position;
+        double halfSizeX = floor.RoomSize.x / 2.0;
+        double halfSizeY = floor.RoomSize.y / 2.0;
+        // TODO: This could be heavily optimized to only check rooms near player (instead of every room).
+        if (playerPosition.x > transform.position.x - halfSizeX && playerPosition.x < transform.position.x + halfSizeX
+            && playerPosition.y > transform.position.y - halfSizeY && playerPosition.y < transform.position.y + halfSizeY)
+        { 
+            roomIsActive = true;
+        }
+        else
+        {
+            if (roomIsActive == true) print("PLAYER LEFT ROOM " + roomID);
+            roomIsActive = false;
+        }
+
+
         timeUntilCheck -= Time.deltaTime;
         if (enemiesGenerated && timeUntilCheck < 0)
         {
             IsRoomClear();
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     /// <summary>
@@ -165,7 +186,7 @@ public class Room : MonoBehaviour {
     public void GenerateEnemies()
     {
         // Calculate the number of enemies to generate per room.
-        int numEnemies = 13 + floor.CurrentFloor;
+        int numEnemies = 17 + floor.CurrentFloor;
         int numFast = Random.Range(0, (numEnemies / 3) - 2);
         // remainingEnemies -= numFast;
         int numTank = Random.Range(0, (numEnemies / 3) - 1);
@@ -190,22 +211,36 @@ public class Room : MonoBehaviour {
         {
             float x = Random.Range(minX, maxX) + this.x;
             float y = Random.Range(minY, maxY) + this.y;
-            enemies[index++] = Instantiate(SpeedEnemy, new Vector3(x, y, 0), Quaternion.identity).GetComponent<BaseEnemy>();
+            enemies[index] = Instantiate(SpeedEnemy, new Vector3(x, y, 0), Quaternion.identity).GetComponent<BaseEnemy>();
+            enemies[index].Room = this.GetComponent<Room>();
+            index++;
         }
         for (int j = 0; j < numTank; j++)
         {
             float x = Random.Range(minX, maxX) + this.x;
             float y = Random.Range(minY, maxY) + this.y;
-            enemies[index++] = Instantiate(TankEnemy, new Vector3(x, y, 0), Quaternion.identity).GetComponent<BaseEnemy>();
+            enemies[index] = Instantiate(TankEnemy, new Vector3(x, y, 0), Quaternion.identity).GetComponent<BaseEnemy>();
+            enemies[index].Room = this.GetComponent<Room>();
+            index++;
         }
         for (int k = 0; k < numBasic; k++)
         {
             float x = Random.Range(minX, maxX) + this.x;
             float y = Random.Range(minY, maxY) + this.y;
-            enemies[index++] = Instantiate(BasicEnemy, new Vector3(x, y, 0), Quaternion.identity).GetComponent<BaseEnemy>();
+            enemies[index] = Instantiate(BasicEnemy, new Vector3(x, y, 0), Quaternion.identity).GetComponent<BaseEnemy>();
+            enemies[index].Room = this.GetComponent<Room>();
+            index++;
         }
 
         enemiesGenerated = true;
+    }
+
+    /// <summary>
+    /// Returns true if the room is active (player is in the room). Otherwise, returns false.
+    /// </summary>
+    public bool IsActive()
+    {
+        return roomIsActive; 
     }
 
     /// <summary>
