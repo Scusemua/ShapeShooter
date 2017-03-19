@@ -13,6 +13,13 @@ public class Room : MonoBehaviour {
     // References to walls which are placed in the absence of doors.
     private GameObject horizontalWall;
     private GameObject verticalWall;
+    // References to doors which are placed in the appropriate places based on the Doors property.
+    private GameObject horizontalDoor;
+    private GameObject verticalDoor;
+    /// <summary>
+    /// Reference to any door GameObjects.
+    /// </summary>
+    private GameObject[] doors;
 
     // The various enemies.
     private GameObject BasicEnemy;
@@ -38,7 +45,7 @@ public class Room : MonoBehaviour {
 
     // How often the room should check if all enemies are dead.
     private float checkRate = 2.0f;
-    private float timeUntilCheck = 2.0f;
+    private float timeUntilCheck;
 
     // Used to prevent the checking of enemies until they've actually been generated.
     private bool enemiesGenerated = false;
@@ -55,6 +62,7 @@ public class Room : MonoBehaviour {
     void Start()
     {
         floor = GameObject.FindGameObjectWithTag("Floor").GetComponent<Floor>();
+        timeUntilCheck = checkRate;
     }
 
     void Awake()
@@ -73,9 +81,10 @@ public class Room : MonoBehaviour {
 
 
         timeUntilCheck -= Time.deltaTime;
-        if (enemiesGenerated && timeUntilCheck < 0)
+        if (timeUntilCheck < 0)
         {
-            IsRoomClear();
+            ClearRoomIfApplicable();
+            timeUntilCheck = checkRate;
         }
     }
 
@@ -109,9 +118,11 @@ public class Room : MonoBehaviour {
     }
 
     /// <summary>
+    /// Destroys all the enemy GameObjects and removes the doors if all the enemies are dead.
+    /// 
     /// Returns true if all enemies in this room are dead, otherwise returns false.
     /// </summary>
-    public bool IsRoomClear()
+    public bool ClearRoomIfApplicable()
     {
         if (state == ROOM_STATE.COMPLETE) return true;
         // Iterate through the array of enemies checking if each enemy is alive. If any enemy is alive, immediately return false.
@@ -126,6 +137,11 @@ public class Room : MonoBehaviour {
         {
             Destroy(e);
         }
+        // Remove all the doors.
+        foreach (GameObject door in doors)
+        {
+            Destroy(door);
+        }
         // Update the room state.
         state = ROOM_STATE.COMPLETE;
         return true;
@@ -133,9 +149,9 @@ public class Room : MonoBehaviour {
 
     /// <summary>
     /// Function to be called once the doors array has been set up from outside the class.
-    /// This function uses the doors array to place doors/walls in the appropriate places.
+    /// This function uses the doors array to place walls in the appropriate places.
     /// </summary>
-    public void PlaceDoors()
+    public void PlaceWalls()
     {
         horizontalWall = Resources.Load("Prefabs/Floor/HorizontalWall") as GameObject;
         verticalWall = Resources.Load("Prefabs/Floor/VerticalWall") as GameObject;
@@ -166,6 +182,42 @@ public class Room : MonoBehaviour {
             GameObject wall = Instantiate(verticalWall, this.transform.position + new Vector3(-8, 0, 0), this.transform.rotation) as GameObject;
             GUIText t = wall.AddComponent<GUIText>();
             t.text = "This was added by Room " + roomID;
+        }
+    }
+
+    /// <summary>
+    /// Function to be called once the doors array has been set up from outside the class.
+    /// This function uses the doors array to place doors in the appropriate places.
+    /// </summary>
+    public void PlaceDoors()
+    {
+        horizontalDoor = Resources.Load("Prefabs/Floor/HorizontalDoor") as GameObject;
+        verticalDoor = Resources.Load("Prefabs/Floor/VerticalDoor") as GameObject;
+        doors = new GameObject[4];
+        int index = 0;
+        // Again, the order of the bool in the doors array is North, South, East, West.
+        if ((Doors & (1 << 3)) == 1) // North
+        {
+            GameObject doorGO = Instantiate(horizontalDoor, this.transform.position + new Vector3(0, 8, 0), this.transform.rotation) as GameObject;
+            doors[index++] = doorGO;
+        }
+
+        if ((Doors & (1 << 2)) == 1) // South
+        {
+            GameObject doorGO = Instantiate(horizontalDoor, this.transform.position + new Vector3(0, -8, 0), this.transform.rotation) as GameObject;
+            doors[index++] = doorGO;
+        }
+
+        if ((Doors & (1 << 1)) == 1) // East
+        {
+            GameObject doorGO = Instantiate(verticalDoor, this.transform.position + new Vector3(8, 0, 0), this.transform.rotation) as GameObject;
+            doors[index++] = doorGO;
+        }
+
+        if ((Doors & 1) == 1) // West
+        {
+            GameObject doorGO = Instantiate(verticalDoor, this.transform.position + new Vector3(-8, 0, 0), this.transform.rotation) as GameObject;
+            doors[index++] = doorGO;
         }
     }
 

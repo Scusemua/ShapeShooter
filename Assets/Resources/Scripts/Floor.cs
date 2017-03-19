@@ -153,7 +153,8 @@ public class Floor : MonoBehaviour {
                 rooms[index].Doors = (byte)(rooms[index].Doors | (1 << direction));
                 rooms.Add(newRoom);
 
-                Room test;
+                // Using the roomHash, update the North, South, East, and West references of the new room and its neighbors. 
+                 Room test;
                 if (roomsHash.TryGetValue(GenerateRoomHash(newRoom.xMatrix + 1, newRoom.yMatrix), out test))
                 {
                     newRoom.East = test;
@@ -216,6 +217,7 @@ public class Floor : MonoBehaviour {
             // Adjust the room's position via the transform.position field.
             gameObject.transform.position = new Vector3(rooms[i].x, rooms[i].y, 0);
             // Place the doors appropriately.
+            rooms[i].PlaceWalls();
             rooms[i].PlaceDoors();
             rooms[i].doorsDebug = roomsMatrix[rooms[i].xMatrix, rooms[i].yMatrix];
             // We don't want enemies in the first room.
