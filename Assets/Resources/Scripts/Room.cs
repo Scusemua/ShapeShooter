@@ -16,10 +16,8 @@ public class Room : MonoBehaviour {
     // References to doors which are placed in the appropriate places based on the Doors property.
     private GameObject horizontalDoor;
     private GameObject verticalDoor;
-    /// <summary>
-    /// Reference to any door GameObjects.
-    /// </summary>
-    private GameObject[] doors;
+    // References to each door object.
+    private GameObject northDoor, eastDoor, westDoor, southDoor;
 
     // The various enemies.
     private GameObject BasicEnemy;
@@ -137,11 +135,12 @@ public class Room : MonoBehaviour {
         {
             Destroy(e);
         }
-        // Remove all the doors.
-        foreach (GameObject door in doors)
-        {
-            Destroy(door);
-        }
+        // Remove all the non-null doors.
+        if (northDoor != null) Destroy(northDoor);
+        if (southDoor != null) Destroy(southDoor);
+        if (westDoor != null) Destroy(westDoor);
+        if (eastDoor != null) Destroy(eastDoor);
+
         // Update the room state.
         state = ROOM_STATE.COMPLETE;
         return true;
@@ -193,31 +192,48 @@ public class Room : MonoBehaviour {
     {
         horizontalDoor = Resources.Load("Prefabs/Floor/HorizontalDoor") as GameObject;
         verticalDoor = Resources.Load("Prefabs/Floor/VerticalDoor") as GameObject;
-        doors = new GameObject[4];
-        int index = 0;
         // Again, the order of the bool in the doors array is North, South, East, West.
+        // Note that we check if the neighboring room already has a door generated in what is effectively the same spot. If it does,
+        // we do not generate another door so as to avoid generating two doors in the same spot.
         if ((Doors & (1 << 3)) == 1) // North
         {
-            GameObject doorGO = Instantiate(horizontalDoor, this.transform.position + new Vector3(0, 8, 0), this.transform.rotation) as GameObject;
-            doors[index++] = doorGO;
+            if (North.southDoor != null) northDoor = North.southDoor;
+            else
+            {
+                GameObject doorGO = Instantiate(horizontalDoor, this.transform.position + new Vector3(0, 8, 0), this.transform.rotation) as GameObject;
+                northDoor = doorGO;
+            }
         }
 
         if ((Doors & (1 << 2)) == 1) // South
         {
-            GameObject doorGO = Instantiate(horizontalDoor, this.transform.position + new Vector3(0, -8, 0), this.transform.rotation) as GameObject;
-            doors[index++] = doorGO;
+            // If the room to the South of this room already has a North door, just use that door to avoid generating two doors on the same position.
+            if (South.northDoor != null) southDoor = South.northDoor;
+            else 
+            {
+                GameObject doorGO = Instantiate(horizontalDoor, this.transform.position + new Vector3(0, -8, 0), this.transform.rotation) as GameObject;
+                southDoor = doorGO;
+            }
         }
 
         if ((Doors & (1 << 1)) == 1) // East
         {
-            GameObject doorGO = Instantiate(verticalDoor, this.transform.position + new Vector3(8, 0, 0), this.transform.rotation) as GameObject;
-            doors[index++] = doorGO;
+            if (East.westDoor != null) eastDoor = East.westDoor;
+            else
+            {
+                GameObject doorGO = Instantiate(verticalDoor, this.transform.position + new Vector3(8, 0, 0), this.transform.rotation) as GameObject;
+                eastDoor = doorGO;
+            }
         }
 
         if ((Doors & 1) == 1) // West
         {
-            GameObject doorGO = Instantiate(verticalDoor, this.transform.position + new Vector3(-8, 0, 0), this.transform.rotation) as GameObject;
-            doors[index++] = doorGO;
+            if (West.eastDoor != null) westDoor = West.eastDoor;
+            else
+            {
+                GameObject doorGO = Instantiate(verticalDoor, this.transform.position + new Vector3(-8, 0, 0), this.transform.rotation) as GameObject;
+                westDoor = doorGO;  
+            }
         }
     }
 
