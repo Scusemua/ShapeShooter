@@ -19,7 +19,7 @@ public class BasicEnemy : BaseEnemy
 	void Update () {
         targetTransform = player.transform;
         // Check if the room is active and then if the player is near.
-        if (room.IsActive()) // && Vector3.Distance(targetTransform.position, this.transform.position) < 12)
+        if (room.IsActive()) 
         {
             transform.position = Vector2.MoveTowards(transform.position, targetTransform.position, movementSpeed * Time.deltaTime);
         }

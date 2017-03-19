@@ -122,6 +122,46 @@ public class Player : MonoBehaviour {
 
     void Update()
     {
+        // Decrement the cooldown to fire.
+        fireCooldownLeft -= Time.deltaTime;
+        if (fireCooldownLeft < 0) fireCooldownLeft = 0;
+
+        // Decrement the invulnerability time.
+        invulnerableTimeLeft -= Time.deltaTime;
+        if (invulnerableTimeLeft <= 0)
+        {
+            invulnerableTimeLeft = 0;
+            invulnerable = false;
+        }
+        if (fireCooldownLeft <= 0)
+        {
+            if (Input.GetKey("up"))
+            {
+                shoot(Vector2.up);
+            }
+            else if (Input.GetKey("down"))
+            {
+                shoot(Vector2.down);
+            }
+            else if (Input.GetKey("right"))
+            {
+                shoot(Vector2.right);
+            }
+            else if (Input.GetKey("left"))
+            {
+                shoot(Vector2.left);
+            }
+        }
+
+        // If Carnage Mode is ready and the player presses space, activate Carnage Mode.
+        if (Input.GetKey("space") && carnageReady)
+        {
+            currentBarCharge = 0;
+            carnageReady = false;
+            carnageBar.fillAmount -= 0.01f;
+            ActivateCarnageMode();
+        }
+
         // Don't let the player's health go above the maximum.
         if (health > maxHealth) health = maxHealth;
         
@@ -169,48 +209,9 @@ public class Player : MonoBehaviour {
 
     void FixedUpdate()
     {
+        // Movement.
         GetComponent<Rigidbody2D>().velocity = new Vector2(Mathf.Lerp(0, Input.GetAxis("Horizontal") * walkSpeed, 1f),
-                                            Mathf.Lerp(0, Input.GetAxis("Vertical") * walkSpeed, 1f));
-        // Decrement the cooldown to fire.
-        fireCooldownLeft -= Time.deltaTime;
-        if (fireCooldownLeft < 0) fireCooldownLeft = 0;
-
-        // Decrement the invulnerability time.
-        invulnerableTimeLeft -= Time.deltaTime;
-        if (invulnerableTimeLeft <= 0)
-        {
-            invulnerableTimeLeft = 0;
-            invulnerable = false;
-        }
-        
-        if (fireCooldownLeft <= 0)
-        {
-            if (Input.GetKey("up"))
-            {
-                shoot(Vector2.up);
-            }
-            else if (Input.GetKey("down"))
-            {
-                shoot(Vector2.down);
-            }
-            else if (Input.GetKey("right"))
-            {
-                shoot(Vector2.right);
-            }
-            else if (Input.GetKey("left"))
-            {
-                shoot(Vector2.left);
-            }
-        }
-
-        // If Carnage Mode is ready and the player presses space, activate Carnage Mode.
-        if (Input.GetKey("space") && carnageReady)
-        {
-            currentBarCharge = 0;
-            carnageReady = false;
-            carnageBar.fillAmount -= 0.01f;
-            ActivateCarnageMode();
-        }
+                                    Mathf.Lerp(0, Input.GetAxis("Vertical") * walkSpeed, 1f));
     }
 
     // Create an instance of a bullet and assign to it the correct direction.

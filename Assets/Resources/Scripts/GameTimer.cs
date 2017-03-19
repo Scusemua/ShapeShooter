@@ -18,19 +18,20 @@ public class GameTimer : MonoBehaviour {
 	void Update () {
         time += Time.deltaTime;
 
-        var minutes = time / 60;
+        var minutes = Mathf.Floor(time / 60);
         var seconds = time % 60;
-        var fraction = (time * 100) % 100;
 
-        timerLabel.text = string.Format("{0:00} : {1:00} : {2:000}", minutes, seconds, fraction);
+        timerLabel.text = string.Format("{0:00} : {1:00}", minutes, seconds);
     }
 
     #region Properties
 
     /// <summary>
-    /// Exposes the Time property.
+    /// Exposes the Time property, which is the amount of Time.deltaTime which has passed since game started.
+    /// 
+    /// Note that Time.deltaTime is the time in seconds it took to complete the "last" frame.
     /// </summary>
-    public float GameTime
+    public float TimeSinceStart
     {
         get
         {

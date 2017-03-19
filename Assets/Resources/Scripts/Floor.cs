@@ -17,6 +17,12 @@ public class Floor : MonoBehaviour {
     private IList<Room> rooms;
     // 2D matrix of the rooms.
     private byte[,] roomsMatrix;
+    // Hash of the rooms.
+    private IDictionary<string, Room> roomsHash;
+    /// <summary>
+    /// Reference to the room in which the player is currently located.
+    /// </summary>
+    private Room activeRoom;
 
     // Shape Shooter title text.
     public GameObject titleText;
@@ -30,12 +36,14 @@ public class Floor : MonoBehaviour {
     private float timeToRegenerate = 30.0f;
     private float timeLeftToRegenerate;
 
+
 	// Initializes appropriate variables.
 	void Start () {
         currentFloor = 1; // We begin on the first floor (one-indexed).
         roomBase = Resources.Load("Prefabs/Floor/Room") as GameObject;
         // Store the size of the room. 
         roomSize = roomBase.transform.FindChild("Quad").GetComponent<Renderer>().bounds.size;
+        roomsHash = new Dictionary<string, Room>();
         GenerateFloor();
         timeLeftToRegenerate = timeToRegenerate;
     }
@@ -43,6 +51,7 @@ public class Floor : MonoBehaviour {
     void Update()
     {
         timeLeftToRegenerate -= Time.deltaTime;
+        // Determine if we need to generate more enemies.
         if (timeLeftToRegenerate <= 0)
         {
             print("GENERATING ENEMIES!");   
@@ -54,6 +63,14 @@ public class Floor : MonoBehaviour {
                 if (timeToRegenerate > 10.0f) timeToRegenerate -= 1.0f;
             }
         }
+
+        // Check the current room and the surrounding rooms for the player. This avoids having to check EVERY room every frame.
+        activeRoom.IsPlayerInThisRoom();
+        if (activeRoom.North != null && activeRoom.North.IsPlayerInThisRoom()) activeRoom = activeRoom.North;
+        if (activeRoom.South != null && activeRoom.South.IsPlayerInThisRoom()) activeRoom = activeRoom.South;
+        if (activeRoom.East != null && activeRoom.East.IsPlayerInThisRoom()) activeRoom = activeRoom.East;
+        if (activeRoom.West != null && activeRoom.West.IsPlayerInThisRoom()) activeRoom = activeRoom.West;
+
     }
 
     // Algorithm which generates the layout for the current floor.
@@ -81,6 +98,8 @@ public class Floor : MonoBehaviour {
         first.y = this.transform.position.y;
         first.xMatrix = matrixDimension >> 1;
         first.yMatrix = matrixDimension >> 1;
+        // Add the new room to the rooms hash, rooms matrix, and rooms list.
+        roomsHash.Add(GenerateRoomHash(first.xMatrix, first.yMatrix), first);
         roomsMatrix[first.xMatrix, first.yMatrix] = 0;
         rooms.Add(first);
         for (int i = 0; i < numRooms; i++)
@@ -127,12 +146,34 @@ public class Floor : MonoBehaviour {
                 newRoom.y = rooms[index].y + (GetYValueBasedOnDirection(direction) * roomSize.y);
                 newRoom.xMatrix = rooms[index].xMatrix + GetXValueBasedOnDirection(direction);
                 newRoom.yMatrix = rooms[index].yMatrix + GetYValueBasedOnDirection(direction);
+                // Add the new room to the rooms hash.
+                roomsHash.Add(GenerateRoomHash(newRoom.xMatrix, newRoom.yMatrix), newRoom);
                 // Update the doors data for the new room and the existing room.
                 newRoom.Doors = (byte)(1 << GetCorrespondingDirection(direction));
                 rooms[index].Doors = (byte)(rooms[index].Doors | (1 << direction));
                 rooms.Add(newRoom);
 
-                // roomsHash.Add(new KeyValuePair<string, Room>(GenerateRoomHash(newRoom.xMatrix, newRoom.yMatrix), newRoom));
+                Room test;
+                if (roomsHash.TryGetValue(GenerateRoomHash(newRoom.xMatrix + 1, newRoom.yMatrix), out test))
+                {
+                    newRoom.East = test;
+                    test.West = newRoom;
+                }
+                if (roomsHash.TryGetValue(GenerateRoomHash(newRoom.xMatrix - 1, newRoom.yMatrix), out test))
+                {
+                    newRoom.West = test;
+                    test.East = newRoom;
+                }
+                if (roomsHash.TryGetValue(GenerateRoomHash(newRoom.xMatrix, newRoom.yMatrix + 1), out test))
+                {
+                    newRoom.North = test;
+                    test.South = newRoom;
+                }
+                if (roomsHash.TryGetValue(GenerateRoomHash(newRoom.xMatrix, newRoom.yMatrix - 1), out test))
+                {
+                    newRoom.South = test;
+                    test.North = newRoom;
+                }
 
                 // Check the neighboring spots to see if we need to add doors. Note that if the new room or the existing is a 
                 // special room, we do not check the neighboring rooms because special rooms only have one way into the room.
@@ -182,6 +223,8 @@ public class Floor : MonoBehaviour {
         }
         // Instantiate the player. 
         Instantiate(player, this.transform.position, Quaternion.identity);
+        // The player will be created in the zero'th room, so that is the activeRoom.
+        activeRoom = rooms[0];
         // If we're on the first floor, then instantiate the title text.
         if (currentFloor == 1) Instantiate(titleText, new Vector3(0, 4, 0), Quaternion.identity);
         UnityEngine.Profiling.Profiler.EndSample();

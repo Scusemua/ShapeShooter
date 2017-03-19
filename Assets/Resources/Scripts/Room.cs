@@ -33,6 +33,9 @@ public class Room : MonoBehaviour {
     // Reference to the Floor GameObject.
     private Floor floor;
 
+    // References to possible connected rooms.
+    public Room North, South, East, West;
+
     // How often the room should check if all enemies are dead.
     private float checkRate = 2.0f;
     private float timeUntilCheck = 2.0f;
@@ -66,20 +69,6 @@ public class Room : MonoBehaviour {
         if (player == null)
         {
             player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
-        }
-        Vector3 playerPosition = player.transform.position;
-        double halfSizeX = floor.RoomSize.x / 2.0;
-        double halfSizeY = floor.RoomSize.y / 2.0;
-        // TODO: This could be heavily optimized to only check rooms near player (instead of every room).
-        if (playerPosition.x > transform.position.x - halfSizeX && playerPosition.x < transform.position.x + halfSizeX
-            && playerPosition.y > transform.position.y - halfSizeY && playerPosition.y < transform.position.y + halfSizeY)
-        { 
-            roomIsActive = true;
-        }
-        else
-        {
-            if (roomIsActive == true) print("PLAYER LEFT ROOM " + roomID);
-            roomIsActive = false;
         }
 
 
@@ -181,6 +170,30 @@ public class Room : MonoBehaviour {
     }
 
     /// <summary>
+    /// Returns true if the player is in this room, otherwise returns false.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsPlayerInThisRoom()
+    {
+        Vector3 playerPosition = player.transform.position;
+        double halfSizeX = floor.RoomSize.x / 2.0;
+        double halfSizeY = floor.RoomSize.y / 2.0;
+        // TODO: This could be heavily optimized to only check rooms near player (instead of every room).
+        if (playerPosition.x > transform.position.x - halfSizeX && playerPosition.x < transform.position.x + halfSizeX
+            && playerPosition.y > transform.position.y - halfSizeY && playerPosition.y < transform.position.y + halfSizeY)
+        {
+            roomIsActive = true;
+            return true;
+        }
+        else
+        {
+            // if (roomIsActive == true) print("PLAYER LEFT ROOM " + roomID);
+            roomIsActive = false;
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Generates the enemies for the room.
     /// </summary>
     public void GenerateEnemies()
@@ -249,5 +262,20 @@ public class Room : MonoBehaviour {
     public string GenerateRoomHash()
     {
         return "(" + xMatrix + "," + yMatrix + ")";
+    }
+
+    public void PrintNeighboringRoomIDs()
+    {
+        string str = "Current Room: " + roomID + " -- ";
+        if (North != null) str += "North: " + North.roomID;
+        else str += "North: N/A";
+        if (South != null) str += ", South: " + South.roomID;
+        else str += ", South: N/A";
+        if (East != null) str += ", East: " + East.roomID;
+        else str += ", East: N/A";
+        if (West != null) str += ", West: " + West.roomID;
+        else str += ", West: N/A";
+
+        print(str);
     }
 }
